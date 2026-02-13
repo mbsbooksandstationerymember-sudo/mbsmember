@@ -19,25 +19,19 @@
             padding-bottom: 120px;
         }
 
-        /* Sembunyikan kedua-dua area secara default untuk elak flicker */
-        #setupArea, #cardArea { 
-            display: none; 
-        }
+        #setupArea, #cardArea { display: none; }
 
-        /* Setup Area */
         .setup-area { 
             background: white; padding: 30px; border-radius: 20px; 
             text-align: center; width: 100%; max-width: 350px; 
             box-shadow: 0 10px 20px rgba(0,0,0,0.05); 
         }
-        .setup-area h2 { margin-top: 0; color: var(--primary); }
         input { 
             width: 100%; padding: 15px; border: 2px solid #ddd; 
             border-radius: 12px; font-size: 1.2rem; text-align: center; 
             box-sizing: border-box; margin-bottom: 10px; 
         }
 
-        /* Card Area Display */
         #cardArea { 
             width: 100%; max-width: 380px; 
             flex-direction: column; align-items: center; 
@@ -60,7 +54,6 @@
         }
         #barcode { width: 100%; height: auto; }
 
-        /* Floating Navigation Bar */
         .navbar { 
             position: fixed; bottom: 20px; width: 90%; max-width: 400px;
             background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
@@ -71,35 +64,17 @@
         .nav-item { color: white; text-decoration: none; text-align: center; font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
         .nav-icon { font-size: 1.5rem; margin-bottom: 4px; }
 
-        /* Modal / Popup News */
-        .modal { 
-            display: none; position: fixed; z-index: 200; left: 0; top: 0; 
-            width: 100%; height: 100%; background: rgba(0,0,0,0.8); 
-        }
-        .modal-content { 
-            background: white; margin: 10% auto; padding: 25px; 
-            width: 85%; max-width: 400px; border-radius: 25px; text-align: center; position: relative;
-        }
-        .promo-banner { width: 100%; border-radius: 12px; margin-bottom: 15px; }
-        .btn-link { 
-            display: block; background: var(--accent); color: white; 
-            padding: 12px; margin: 8px 0; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 0.9rem;
-        }
-
-        /* Delete Button */
-        .btn-delete {
-            margin-top: 30px; background: none; border: 1px solid #ccc;
-            color: #888; padding: 8px 15px; border-radius: 8px; font-size: 0.7rem;
-            cursor: pointer; transition: 0.3s;
-        }
-        .btn-delete:hover { background: #fee2e2; color: #ef4444; border-color: #ef4444; }
+        .modal { display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); }
+        .modal-content { background: white; margin: 10% auto; padding: 25px; width: 85%; max-width: 400px; border-radius: 25px; text-align: center; position: relative; }
+        .btn-link { display: block; background: var(--accent); color: white; padding: 12px; margin: 8px 0; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 0.9rem; }
+        .btn-delete { margin-top: 30px; background: none; border: 1px solid #ccc; color: #888; padding: 8px 15px; border-radius: 8px; font-size: 0.7rem; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div id="setupArea" class="setup-area">
-        <h2>MBS DIGITAL</h2>
-        <p style="font-size: 0.8rem; color: #666; margin-bottom: 20px;">Masukkan No. Ahli untuk aktifkan kad digital anda.</p>
+        <h2 style="color:var(--primary)">MBS DIGITAL</h2>
+        <p style="font-size: 0.8rem; color: #666; margin-bottom: 20px;">Masukkan No. Ahli untuk aktifkan kad.</p>
         <input type="text" id="memberInput" placeholder="Contoh: 3ABC99">
         <button style="width:100%; padding:15px; border-radius:12px; border:none; background:var(--primary); color:white; font-weight:bold; cursor:pointer;" onclick="activateCard()">AKTIFKAN KAD</button>
     </div>
@@ -113,7 +88,6 @@
             <svg id="barcode"></svg>
             <p style="font-size: 0.6rem; color: #999; margin-top: 5px; letter-spacing: 1px;">SILA IMBAS DI KAUNTER</p>
         </div>
-
         <button class="btn-delete" onclick="confirmDelete()">Hapus Kad dari Peranti</button>
     </div>
 
@@ -133,105 +107,95 @@
         <div class="modal-content">
             <span style="position:absolute; right:20px; top:15px; cursor:pointer; font-weight:bold; color:#999;" onclick="closeNews()">✕</span>
             <h3 style="margin-top:0; color:var(--primary);">Promosi Terkini!</h3>
-            <img src="https://via.placeholder.com/400x200?text=Poster+Promosi+MBS" class="promo-banner" alt="Promo MBS">
-            <p style="font-size: 0.8rem; color: #666;">Klik butang di bawah untuk info lanjut atau shopping!</p>
-            
-            <a href="https://sites.google.com/view/mbs-promo" target="_blank" class="btn-link">🌐 Google Sites (Katalog)</a>
-            <a href="https://shopee.com.my/" target="_blank" class="btn-link" style="background:#ee4d2d;">🧡 Shopee MBS</a>
-            <a href="https://tiktok.com/" target="_blank" class="btn-link" style="background:#000;">🖤 TikTok MBS</a>
-            
+            <a href="https://sites.google.com/view/mbs-promo" target="_blank" class="btn-link">🌐 Katalog</a>
+            <a href="https://shopee.com.my/" target="_blank" class="btn-link" style="background:#ee4d2d;">🧡 Shopee</a>
             <button onclick="closeNews()" style="border:none; background:none; color:#888; margin-top:10px; cursor:pointer;">Tutup</button>
         </div>
     </div>
 
     <script>
-        // FUNGSI UTAMA: Check Storan & Papar Area
-        function initApp() {
-            const savedID = localStorage.getItem("mbs_digital_id");
-            const setupArea = document.getElementById("setupArea");
-            const cardArea = document.getElementById("cardArea");
+        let isRendered = false; // Value tracker: Akan jadi true bila barcode siap jana
+        let checkInterval; // Penanda untuk interval supaya boleh di-stop
 
-            if (savedID) {
-                // Jika ada ID, render kad dan sorok borang
-                renderCard(savedID);
-                setupArea.style.display = "none";
-                cardArea.style.display = "flex";
-            } else {
-                // Jika tiada ID, tunjuk borang pendaftaran
-                setupArea.style.display = "block";
-                cardArea.style.display = "none";
-            }
+        function renderCard(id) {
+            // Tunggu 1 saat sebelum jana barcode (seperti diminta)
+            setTimeout(() => {
+                document.getElementById("setupArea").style.display = "none";
+                document.getElementById("cardArea").style.display = "flex";
+                document.getElementById("idDisplay").innerText = id;
+
+                const visual = document.getElementById("visualBg");
+                if (id.startsWith('3')) {
+                    visual.style.backgroundImage = "url('png1.png')";
+                    visual.style.backgroundColor = "#1e3a8a"; 
+                } else if (id.startsWith('9')) {
+                    visual.style.backgroundImage = "url('png2.png')";
+                    visual.style.backgroundColor = "#991b1b"; 
+                } else {
+                    visual.style.backgroundImage = "none";
+                    visual.style.backgroundColor = "#334155"; 
+                }
+
+                // Proses jana barcode
+                JsBarcode("#barcode", id, { 
+                    format: "CODE128", 
+                    width: 2.5, 
+                    height: 80, 
+                    displayValue: false,
+                    lineColor: "#000"
+                });
+
+                // Set status kepada TRUE dan STOP interval
+                isRendered = true;
+                clearInterval(checkInterval);
+                console.log("Barcode Generated. Status: " + isRendered + ". Detection Stopped.");
+            }, 1000); 
         }
 
-        // Jalankan check sebaik sahaja browser buka link
-        window.onload = function() {
-            initApp();
-
-            // Safety recheck setiap 2 saat
-            setInterval(() => {
-                const currentData = localStorage.getItem("mbs_digital_id");
-                const cardIsVisible = (document.getElementById("cardArea").style.display === "flex");
-
-                // Jika data dipadam di tab lain, refresh ke borang
-                if (!currentData && cardIsVisible) {
-                    location.reload();
-                } 
-                // Jika data baru masuk tapi borang masih ada, terus render
-                else if (currentData && !cardIsVisible) {
-                    initApp();
+        function startDetection() {
+            checkInterval = setInterval(() => {
+                // Jika sudah true, jangan buat apa-apa (double safety)
+                if (isRendered) {
+                    clearInterval(checkInterval);
+                    return;
                 }
-            }, 2000);
-        };
+
+                const savedID = localStorage.getItem("mbs_digital_id");
+                
+                if (savedID) {
+                    console.log("Data detected! Waiting 1s to render...");
+                    renderCard(savedID);
+                    // Kita stop interval di sini juga supaya tidak panggil render berkali-kali masa tgh tunggu timeout
+                    clearInterval(checkInterval); 
+                } else {
+                    document.getElementById("setupArea").style.display = "block";
+                    console.log("Checking for data every 1s...");
+                }
+            }, 1000);
+        }
+
+        window.onload = startDetection;
 
         function activateCard() {
             const id = document.getElementById("memberInput").value.trim().toUpperCase();
             if (id) {
                 localStorage.setItem("mbs_digital_id", id);
-                initApp(); // Terus update paparan
+                // Selepas set item, sistem akan detect dalam masa 1 saat melalui interval
             } else {
                 alert("Sila masukkan No. Ahli.");
             }
         }
 
-        function renderCard(id) {
-            document.getElementById("idDisplay").innerText = id;
-            const visual = document.getElementById("visualBg");
-            
-            // Logik Tukar Background Berdasarkan No Ahli
-            if (id.startsWith('3')) {
-                visual.style.backgroundImage = "url('png1.png')";
-                visual.style.backgroundColor = "#1e3a8a"; 
-            } else if (id.startsWith('9')) {
-                visual.style.backgroundImage = "url('png2.png')";
-                visual.style.backgroundColor = "#991b1b"; 
-            } else {
-                visual.style.backgroundImage = "none";
-                visual.style.backgroundColor = "#334155"; 
-            }
-
-            // Jana Barcode
-            JsBarcode("#barcode", id, { 
-                format: "CODE128", 
-                width: 2.5, 
-                height: 80, 
-                displayValue: false,
-                lineColor: "#000"
-            });
-        }
-
         function confirmDelete() {
-            if (confirm("Padam kad dari peranti ini?")) {
+            if (confirm("Padam kad dari peranti?")) {
                 localStorage.removeItem("mbs_digital_id");
+                isRendered = false; // Reset status
                 location.reload();
             }
         }
 
         function openNews() { document.getElementById("newsModal").style.display = "block"; }
         function closeNews() { document.getElementById("newsModal").style.display = "none"; }
-        
-        window.onclick = function(event) {
-            if (event.target == document.getElementById("newsModal")) { closeNews(); }
-        }
     </script>
 </body>
 </html>
