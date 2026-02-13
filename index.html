@@ -16,16 +16,33 @@
             background-color: #f1f5f9; 
             margin: 0; padding: 20px; 
             display: flex; flex-direction: column; align-items: center;
-            padding-bottom: 120px; /* Ruang ekstra untuk navbar */
+            padding-bottom: 120px;
+        }
+
+        /* Sembunyikan kedua-dua area secara default untuk elak flicker */
+        #setupArea, #cardArea { 
+            display: none; 
         }
 
         /* Setup Area */
-        .setup-area { background: white; padding: 30px; border-radius: 20px; text-align: center; width: 100%; max-width: 350px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .setup-area { 
+            background: white; padding: 30px; border-radius: 20px; 
+            text-align: center; width: 100%; max-width: 350px; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); 
+        }
         .setup-area h2 { margin-top: 0; color: var(--primary); }
-        input { width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 12px; font-size: 1.2rem; text-align: center; box-sizing: border-box; margin-bottom: 10px; }
+        input { 
+            width: 100%; padding: 15px; border: 2px solid #ddd; 
+            border-radius: 12px; font-size: 1.2rem; text-align: center; 
+            box-sizing: border-box; margin-bottom: 10px; 
+        }
 
         /* Card Area Display */
-        #cardArea { display: none; width: 100%; max-width: 380px; flex-direction: column; align-items: center; animation: fadeIn 0.5s ease; }
+        #cardArea { 
+            width: 100%; max-width: 380px; 
+            flex-direction: column; align-items: center; 
+            animation: fadeIn 0.5s ease; 
+        }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .card-visual { 
@@ -33,11 +50,12 @@
             background-size: cover; background-position: center;
             box-shadow: 0 15px 30px rgba(0,0,0,0.2);
             position: relative; color: white; padding: 25px; box-sizing: border-box;
-            background-color: #334155; /* Default color */
+            background-color: #334155;
         }
         .barcode-section { 
             background: white; border-radius: 15px; padding: 15px; 
-            margin-top: -40px; width: 85%; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            margin-top: -40px; width: 85%; text-align: center; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
             z-index: 5;
         }
         #barcode { width: 100%; height: auto; }
@@ -127,40 +145,68 @@
     </div>
 
     <script>
-        window.onload = function() {
+        // FUNGSI UTAMA: Check Storan & Papar Area
+        function initApp() {
             const savedID = localStorage.getItem("mbs_digital_id");
+            const setupArea = document.getElementById("setupArea");
+            const cardArea = document.getElementById("cardArea");
+
             if (savedID) {
+                // Jika ada ID, render kad dan sorok borang
                 renderCard(savedID);
+                setupArea.style.display = "none";
+                cardArea.style.display = "flex";
+            } else {
+                // Jika tiada ID, tunjuk borang pendaftaran
+                setupArea.style.display = "block";
+                cardArea.style.display = "none";
             }
+        }
+
+        // Jalankan check sebaik sahaja browser buka link
+        window.onload = function() {
+            initApp();
+
+            // Safety recheck setiap 2 saat
+            setInterval(() => {
+                const currentData = localStorage.getItem("mbs_digital_id");
+                const cardIsVisible = (document.getElementById("cardArea").style.display === "flex");
+
+                // Jika data dipadam di tab lain, refresh ke borang
+                if (!currentData && cardIsVisible) {
+                    location.reload();
+                } 
+                // Jika data baru masuk tapi borang masih ada, terus render
+                else if (currentData && !cardIsVisible) {
+                    initApp();
+                }
+            }, 2000);
         };
 
         function activateCard() {
             const id = document.getElementById("memberInput").value.trim().toUpperCase();
             if (id) {
                 localStorage.setItem("mbs_digital_id", id);
-                renderCard(id);
+                initApp(); // Terus update paparan
             } else {
                 alert("Sila masukkan No. Ahli.");
             }
         }
 
         function renderCard(id) {
-            document.getElementById("setupArea").style.display = "none";
-            document.getElementById("cardArea").style.display = "flex";
             document.getElementById("idDisplay").innerText = id;
-
             const visual = document.getElementById("visualBg");
             
             // Logik Tukar Background Berdasarkan No Ahli
             if (id.startsWith('3')) {
                 visual.style.backgroundImage = "url('png1.png')";
-                visual.style.backgroundColor = "#1e3a8a"; // Biru
+                visual.style.backgroundColor = "#1e3a8a"; 
             } else if (id.startsWith('9')) {
                 visual.style.backgroundImage = "url('png2.png')";
-                visual.style.backgroundColor = "#991b1b"; // Merah
+                visual.style.backgroundColor = "#991b1b"; 
             } else {
                 visual.style.backgroundImage = "none";
-                visual.style.backgroundColor = "#334155"; // Default Kelabu Tua
+                visual.style.backgroundColor = "#334155"; 
             }
 
             // Jana Barcode
@@ -174,9 +220,8 @@
         }
 
         function confirmDelete() {
-            if (confirm("Adakah anda pasti mahu memadam kad ini dari telefon? \n\nData akan dibuang dan anda perlu masukkan No. Ahli semula.")) {
+            if (confirm("Padam kad dari peranti ini?")) {
                 localStorage.removeItem("mbs_digital_id");
-                alert("Kad berjaya dipadam.");
                 location.reload();
             }
         }
@@ -184,10 +229,8 @@
         function openNews() { document.getElementById("newsModal").style.display = "block"; }
         function closeNews() { document.getElementById("newsModal").style.display = "none"; }
         
-        // Tutup modal jika klik di luar kotak putih
         window.onclick = function(event) {
-            let modal = document.getElementById("newsModal");
-            if (event.target == modal) { modal.style.display = "none"; }
+            if (event.target == document.getElementById("newsModal")) { closeNews(); }
         }
     </script>
 </body>
