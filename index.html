@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital MBS Member Card</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <style>
+        :root { 
+            --primary: #0f172a; 
+            --accent: #3b82f6;
+        }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f1f5f9; 
+            margin: 0; padding: 20px; 
+            display: flex; flex-direction: column; align-items: center;
+            padding-bottom: 120px; /* Ruang ekstra untuk navbar */
+        }
+
+        /* Setup Area */
+        .setup-area { background: white; padding: 30px; border-radius: 20px; text-align: center; width: 100%; max-width: 350px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .setup-area h2 { margin-top: 0; color: var(--primary); }
+        input { width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 12px; font-size: 1.2rem; text-align: center; box-sizing: border-box; margin-bottom: 10px; }
+
+        /* Card Area Display */
+        #cardArea { display: none; width: 100%; max-width: 380px; flex-direction: column; align-items: center; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .card-visual { 
+            width: 100%; height: 210px; border-radius: 20px; 
+            background-size: cover; background-position: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            position: relative; color: white; padding: 25px; box-sizing: border-box;
+            background-color: #334155; /* Default color */
+        }
+        .barcode-section { 
+            background: white; border-radius: 15px; padding: 15px; 
+            margin-top: -40px; width: 85%; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            z-index: 5;
+        }
+        #barcode { width: 100%; height: auto; }
+
+        /* Floating Navigation Bar */
+        .navbar { 
+            position: fixed; bottom: 20px; width: 90%; max-width: 400px;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
+            display: flex; justify-content: space-around; padding: 15px;
+            border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+        .nav-item { color: white; text-decoration: none; text-align: center; font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .nav-icon { font-size: 1.5rem; margin-bottom: 4px; }
+
+        /* Modal / Popup News */
+        .modal { 
+            display: none; position: fixed; z-index: 200; left: 0; top: 0; 
+            width: 100%; height: 100%; background: rgba(0,0,0,0.8); 
+        }
+        .modal-content { 
+            background: white; margin: 10% auto; padding: 25px; 
+            width: 85%; max-width: 400px; border-radius: 25px; text-align: center; position: relative;
+        }
+        .promo-banner { width: 100%; border-radius: 12px; margin-bottom: 15px; }
+        .btn-link { 
+            display: block; background: var(--accent); color: white; 
+            padding: 12px; margin: 8px 0; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 0.9rem;
+        }
+
+        /* Delete Button */
+        .btn-delete {
+            margin-top: 30px; background: none; border: 1px solid #ccc;
+            color: #888; padding: 8px 15px; border-radius: 8px; font-size: 0.7rem;
+            cursor: pointer; transition: 0.3s;
+        }
+        .btn-delete:hover { background: #fee2e2; color: #ef4444; border-color: #ef4444; }
+    </style>
+</head>
+<body>
+
+    <div id="setupArea" class="setup-area">
+        <h2>MBS DIGITAL</h2>
+        <p style="font-size: 0.8rem; color: #666; margin-bottom: 20px;">Masukkan No. Ahli untuk aktifkan kad digital anda.</p>
+        <input type="text" id="memberInput" placeholder="Contoh: 3ABC99">
+        <button style="width:100%; padding:15px; border-radius:12px; border:none; background:var(--primary); color:white; font-weight:bold; cursor:pointer;" onclick="activateCard()">AKTIFKAN KAD</button>
+    </div>
+
+    <div id="cardArea">
+        <div id="visualBg" class="card-visual">
+            <div style="font-weight: bold; letter-spacing: 2px; opacity: 0.9;">MBS MEMBER</div>
+            <div id="idDisplay" style="font-size: 1.8rem; font-weight: 800; margin-top: 15px; letter-spacing: 2px;"></div>
+        </div>
+        <div class="barcode-section">
+            <svg id="barcode"></svg>
+            <p style="font-size: 0.6rem; color: #999; margin-top: 5px; letter-spacing: 1px;">SILA IMBAS DI KAUNTER</p>
+        </div>
+
+        <button class="btn-delete" onclick="confirmDelete()">Hapus Kad dari Peranti</button>
+    </div>
+
+    <div class="navbar">
+        <div class="nav-item" onclick="location.reload()">
+            <span class="nav-icon">🪪</span><span>KAD</span>
+        </div>
+        <div class="nav-item" onclick="openNews()">
+            <span class="nav-icon">🔥</span><span>NEWS</span>
+        </div>
+        <a href="https://wa.me/60175626166" class="nav-item" style="text-decoration: none;">
+            <span class="nav-icon">💬</span><span>HELP</span>
+        </a>
+    </div>
+
+    <div id="newsModal" class="modal">
+        <div class="modal-content">
+            <span style="position:absolute; right:20px; top:15px; cursor:pointer; font-weight:bold; color:#999;" onclick="closeNews()">✕</span>
+            <h3 style="margin-top:0; color:var(--primary);">Promosi Terkini!</h3>
+            <img src="https://via.placeholder.com/400x200?text=Poster+Promosi+MBS" class="promo-banner" alt="Promo MBS">
+            <p style="font-size: 0.8rem; color: #666;">Klik butang di bawah untuk info lanjut atau shopping!</p>
+            
+            <a href="https://sites.google.com/view/mbs-promo" target="_blank" class="btn-link">🌐 Google Sites (Katalog)</a>
+            <a href="https://shopee.com.my/" target="_blank" class="btn-link" style="background:#ee4d2d;">🧡 Shopee MBS</a>
+            <a href="https://tiktok.com/" target="_blank" class="btn-link" style="background:#000;">🖤 TikTok MBS</a>
+            
+            <button onclick="closeNews()" style="border:none; background:none; color:#888; margin-top:10px; cursor:pointer;">Tutup</button>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const savedID = localStorage.getItem("mbs_digital_id");
+            if (savedID) {
+                renderCard(savedID);
+            }
+        };
+
+        function activateCard() {
+            const id = document.getElementById("memberInput").value.trim().toUpperCase();
+            if (id) {
+                localStorage.setItem("mbs_digital_id", id);
+                renderCard(id);
+            } else {
+                alert("Sila masukkan No. Ahli.");
+            }
+        }
+
+        function renderCard(id) {
+            document.getElementById("setupArea").style.display = "none";
+            document.getElementById("cardArea").style.display = "flex";
+            document.getElementById("idDisplay").innerText = id;
+
+            const visual = document.getElementById("visualBg");
+            
+            // Logik Tukar Background Berdasarkan No Ahli
+            if (id.startsWith('3')) {
+                visual.style.backgroundImage = "url('png1.png')";
+                visual.style.backgroundColor = "#1e3a8a"; // Biru
+            } else if (id.startsWith('9')) {
+                visual.style.backgroundImage = "url('png2.png')";
+                visual.style.backgroundColor = "#991b1b"; // Merah
+            } else {
+                visual.style.backgroundImage = "none";
+                visual.style.backgroundColor = "#334155"; // Default Kelabu Tua
+            }
+
+            // Jana Barcode
+            JsBarcode("#barcode", id, { 
+                format: "CODE128", 
+                width: 2.5, 
+                height: 80, 
+                displayValue: false,
+                lineColor: "#000"
+            });
+        }
+
+        function confirmDelete() {
+            if (confirm("Adakah anda pasti mahu memadam kad ini dari telefon? \n\nData akan dibuang dan anda perlu masukkan No. Ahli semula.")) {
+                localStorage.removeItem("mbs_digital_id");
+                alert("Kad berjaya dipadam.");
+                location.reload();
+            }
+        }
+
+        function openNews() { document.getElementById("newsModal").style.display = "block"; }
+        function closeNews() { document.getElementById("newsModal").style.display = "none"; }
+        
+        // Tutup modal jika klik di luar kotak putih
+        window.onclick = function(event) {
+            let modal = document.getElementById("newsModal");
+            if (event.target == modal) { modal.style.display = "none"; }
+        }
+    </script>
+</body>
+</html>
