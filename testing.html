@@ -14,13 +14,13 @@
 <!-- OneSignal -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
-window.OneSignalDeferred = window.OneSignalDeferred || [];
-OneSignalDeferred.push(async function(OneSignal) {
-  await OneSignal.init({
-    appId: "5219b476-fb6d-471f-948d-d62440603af3",
-    notifyButton: { enable: true }
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "5219b476-fb6d-471f-948d-d62440603af3",
+      serviceWorkerPath: "OneSignalSDKWorker.js", // Tambah baris ini
+    });
   });
-});
 </script>
 
 <style>
@@ -319,3 +319,4 @@ function closeNews() {
 
 </body>
 </html>
+
