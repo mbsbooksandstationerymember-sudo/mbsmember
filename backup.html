@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
+    <meta http-equiv="Content-Language" content="ms">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital MBS Member Card</title>
+    <link rel="manifest" href="/mbsmember/manifest.json">
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+
+    <style>
+        :root { 
+            --primary: #0f172a; 
+            --accent: #3b82f6;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f1f5f9; 
+            margin: 0; padding: 20px; 
+            display: flex; flex-direction: column; align-items: center;
+            padding-bottom: 120px;
+        }
+
+        #setupArea, #cardArea { display: none; }
+
+        /* ===== Loading ===== */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        #loadingScreen {
+            position: fixed;
+            inset: 0;
+            background: #f1f5f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #ddd;
+            border-top: 5px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* ===== Setup Area ===== */
+        .setup-area { 
+            background: white; padding: 30px; border-radius: 20px; 
+            text-align: center; width: 100%; max-width: 350px; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); 
+        }
+
+        input { 
+            width: 100%; padding: 15px; border: 2px solid #ddd; 
+            border-radius: 12px; font-size: 1.2rem; text-align: center; 
+            box-sizing: border-box; margin-bottom: 10px; 
+        }
+
+        /* ===== Card ===== */
+        #cardArea { 
+            width: 100%; max-width: 380px; 
+            flex-direction: column; align-items: center; 
+            animation: fadeIn 0.5s ease; 
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .card-visual { 
+            width: 100%; height: 210px; border-radius: 20px; 
+            background-size: cover; background-position: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            position: relative; color: white; padding: 25px; box-sizing: border-box;
+            background-color: #334155;
+        }
+
+        .barcode-section { 
+            background: white; border-radius: 15px; padding: 15px; 
+            margin-top: -40px; width: 85%; text-align: center; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            z-index: 5;
+        }
+
+        #barcode { width: 100%; height: auto; }
+
+        /* ===== Navbar ===== */
+        .navbar { 
+            position: fixed; bottom: 20px; width: 90%; max-width: 400px;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
+            display: flex; justify-content: space-around; padding: 15px;
+            border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+
+        .nav-item { 
+            color: white; text-decoration: none; text-align: center; 
+            font-size: 0.75rem; display: flex; flex-direction: column; 
+            align-items: center; cursor: pointer; 
+        }
+
+        .nav-icon { font-size: 1.5rem; margin-bottom: 4px; }
+
+        /* ===== Modal ===== */
+        .modal { 
+            display: none; position: fixed; z-index: 200; 
+            left: 0; top: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.8); 
+        }
+
+        .modal-content { 
+            background: white; margin: 10% auto; padding: 25px; 
+            width: 85%; max-width: 400px; border-radius: 25px; 
+            text-align: center; position: relative; 
+        }
+
+        .btn-link { 
+            display: block; background: var(--accent); color: white; 
+            padding: 12px; margin: 8px 0; border-radius: 10px; 
+            text-decoration: none; font-weight: bold; font-size: 0.9rem; 
+        }
+
+        .btn-delete { 
+            margin-top: 30px; background: none; border: 1px solid #ccc; 
+            color: #888; padding: 8px 15px; border-radius: 8px; 
+            font-size: 0.7rem; cursor: pointer; 
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Loading -->
+<div id="loadingScreen">
+    <div class="spinner"></div>
+    <p style="margin-top:15px; font-size:0.9rem; color:#555;">
+        Sila tunggu sebentar...
+    </p>
+</div>
+
+<!-- Setup -->
+<div id="setupArea" class="setup-area">
+    <h2 style="color:var(--primary)">Digital MBS Member Card</h2>
+    <p style="font-size: 0.8rem; color: #666; margin-bottom: 20px;">
+        Masukkan No. Ahli untuk aktifkan kad.
+    </p>
+    <input type="text" id="memberInput" placeholder="Contoh: 3ABC99">
+    <button style="width:100%; padding:15px; border-radius:12px; border:none; background:var(--primary); color:white; font-weight:bold; cursor:pointer;" onclick="activateCard()">AKTIFKAN KAD</button>
+</div>
+
+<!-- Card -->
+<div id="cardArea">
+    <div id="visualBg" class="card-visual">
+        <div style="font-weight: bold; letter-spacing: 2px; opacity: 0.9;"></div>
+        <div id="idDisplay" style="font-size: 1.8rem; font-weight: 800; margin-top: 15px; letter-spacing: 2px;"></div>
+    </div>
+    <div class="barcode-section">
+        <svg id="barcode"></svg>
+        <p style="font-size: 0.6rem; color: #999; margin-top: 5px; letter-spacing: 1px;">
+            SILA IMBAS DI KAUNTER
+        </p>
+    </div>
+    <button class="btn-delete" onclick="confirmDelete()">Hapus Kad dari Peranti</button>
+</div>
+
+<!-- Navbar -->
+<div class="navbar">
+    <div class="nav-item" onclick="location.reload()">
+        <span class="nav-icon">🪪</span><span>KAD</span>
+    </div>
+
+    <div class="nav-item" onclick="openNews()">
+        <span class="nav-icon">🔥</span><span>NEWS</span>
+    </div>
+
+    <a href="https://wa.me/60175626166" class="nav-item">
+        <span class="nav-icon">💬</span><span>HELP</span>
+    </a>
+</div>
+
+<!-- Modal -->
+<div id="newsModal" class="modal">
+    <div class="modal-content">
+        <span style="position:absolute; right:20px; top:15px; cursor:pointer; font-weight:bold; color:#999;" onclick="closeNews()">✕</span>
+        <h3 style="margin-top:0; color:var(--primary);">Promosi Terkini!</h3>
+        <a href="https://sites.google.com/view/mbs-promo" target="_blank" class="btn-link">🌐 Katalog</a>
+        <a href="https://shopee.com.my/mbsworld" target="_blank" class="btn-link" style="background:#ee4d2d;">🧡 Shopee</a>
+        <a href="https://www.facebook.com/MBSBooksNStationery/" target="_blank" class="btn-link" style="background:#1877F2;">📘 Facebook</a>
+        <a href="https://www.tiktok.com/@mbsbookstorenstationery" target="_blank" class="btn-link" style="background:#000000;">🎵 TikTok</a>
+
+        <button onclick="closeNews()" style="border:none; background:none; color:#888; margin-top:10px; cursor:pointer;">Tutup</button>
+    </div>
+</div>
+
+<script>
+    let isRendered = false;
+    let checkInterval;
+
+    function renderCard(id) {
+        setTimeout(() => {
+            document.getElementById("setupArea").style.display = "none";
+            document.getElementById("cardArea").style.display = "flex";
+            // document.getElementById("idDisplay").innerText = id;
+
+            const visual = document.getElementById("visualBg");
+
+            if (id.startsWith('3') || id.startsWith('6')) {
+                visual.style.backgroundImage = "url('/mbsmember/png1.png')";
+                visual.style.backgroundColor = "#1e3a8a";
+            } else if (id.startsWith('9')) {
+                visual.style.backgroundImage = "url('/mbsmember/png2.png')";
+                visual.style.backgroundColor = "#991b1b";
+            } else {
+                visual.style.backgroundImage = "url('/mbsmember/png3.png')";
+                visual.style.backgroundColor = "#334155";
+            }
+
+            JsBarcode("#barcode", id, {
+                format: "CODE128",
+                width: 2.5,
+                height: 80,
+                displayValue: true,
+                lineColor: "#000"
+            });
+
+            document.getElementById("loadingScreen").style.display = "none";
+            isRendered = true;
+        }, 1000);
+    }
+
+    function startDetection() {
+        checkInterval = setInterval(() => {
+
+            if (isRendered) {
+                clearInterval(checkInterval);
+                return;
+            }
+
+            const savedID = localStorage.getItem("mbs_digital_id");
+
+            if (savedID) {
+                renderCard(savedID);
+                clearInterval(checkInterval);
+            } else {
+                document.getElementById("setupArea").style.display = "block";
+                document.getElementById("loadingScreen").style.display = "none";
+            }
+
+        }, 1000);
+    }
+
+    window.onload = startDetection;
+
+    function activateCard() {
+        const id = document.getElementById("memberInput").value.trim().toUpperCase();
+
+        if (id) {
+            localStorage.setItem("mbs_digital_id", id);
+        } else {
+            alert("Sila masukkan No. Ahli.");
+        }
+    }
+
+    function confirmDelete() {
+        if (confirm("Padam kad dari peranti?")) {
+            localStorage.removeItem("mbs_digital_id");
+            isRendered = false;
+            location.reload();
+        }
+    }
+
+    function openNews() {
+        document.getElementById("newsModal").style.display = "block";
+    }
+
+    function closeNews() {
+        document.getElementById("newsModal").style.display = "none";
+    }
+</script>
+
+</body>
+</html>
+
+
+
+
+
