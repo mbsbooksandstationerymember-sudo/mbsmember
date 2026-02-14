@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital MBS Member Card</title>
+
+<meta name="google" content="notranslate">
+<meta http-equiv="Content-Language" content="ms">
+
+<!-- JsBarcode -->
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+
+<!-- OneSignal -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+window.OneSignalDeferred = window.OneSignalDeferred || [];
+OneSignalDeferred.push(async function(OneSignal) {
+  await OneSignal.init({
+    appId: "5219b476-fb6d-471f-948d-d62440603af3",
+    notifyButton: { enable: true }
+  });
+});
+</script>
+
+<style>
+:root { 
+    --primary: #0f172a; 
+    --accent: #3b82f6;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f1f5f9;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 120px;
+}
+
+/* Loading */
+#loadingScreen {
+    position: fixed;
+    inset: 0;
+    background: #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #ddd;
+    border-top: 5px solid var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Setup */
+#setupArea {
+    display: none;
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    width: 100%;
+    max-width: 350px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+/* Card */
+#cardArea {
+    display: none;
+    width: 100%;
+    max-width: 380px;
+    flex-direction: column;
+    align-items: center;
+}
+
+.card-visual {
+    width: 100%;
+    height: 210px;
+    border-radius: 20px;
+    background-size: cover;
+    background-position: center;
+    background-color: #334155;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    padding: 25px;
+    box-sizing: border-box;
+    color: white;
+}
+
+.barcode-section {
+    background: white;
+    border-radius: 15px;
+    padding: 15px;
+    margin-top: -40px;
+    width: 85%;
+    text-align: center;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.btn-delete {
+    margin-top: 25px;
+    background: none;
+    border: 1px solid #ccc;
+    color: #888;
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+
+/* Navbar */
+.navbar {
+    position: fixed;
+    bottom: 20px;
+    width: 90%;
+    max-width: 400px;
+    background: rgba(15, 23, 42, 0.95);
+    display: flex;
+    justify-content: space-around;
+    padding: 15px;
+    border-radius: 25px;
+    color: white;
+}
+
+.nav-item {
+    text-align: center;
+    font-size: 0.75rem;
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
+}
+
+.nav-icon {
+    font-size: 1.5rem;
+    display: block;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 200;
+}
+
+.modal-content {
+    background: white;
+    margin: 15% auto;
+    padding: 25px;
+    width: 85%;
+    max-width: 400px;
+    border-radius: 20px;
+    text-align: center;
+}
+
+.btn-link {
+    display: block;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 10px;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<!-- Loading -->
+<div id="loadingScreen">
+    <div class="spinner"></div>
+    <p style="margin-top:15px;font-size:0.9rem;color:#555;">Sila tunggu sebentar...</p>
+</div>
+
+<!-- Setup -->
+<div id="setupArea">
+    <h2 style="color:var(--primary)">Digital MBS Member Card</h2>
+    <p style="font-size:0.8rem;color:#666;">Masukkan No. Ahli untuk aktifkan kad.</p>
+    <input type="text" id="memberInput" placeholder="Contoh: 3ABC99"
+    style="width:100%;padding:15px;border:2px solid #ddd;border-radius:12px;margin-bottom:15px;text-align:center;">
+    <button onclick="activateCard()" 
+    style="width:100%;padding:15px;border-radius:12px;border:none;background:var(--primary);color:white;font-weight:bold;">
+    AKTIFKAN KAD
+    </button>
+</div>
+
+<!-- Card -->
+<div id="cardArea">
+    <div id="visualBg" class="card-visual">
+        <div id="idDisplay" style="font-size:1.8rem;font-weight:800;margin-top:20px;letter-spacing:2px;"></div>
+    </div>
+
+    <div class="barcode-section">
+        <svg id="barcode"></svg>
+        <p style="font-size:0.6rem;color:#999;margin-top:5px;">SILA IMBAS DI KAUNTER</p>
+    </div>
+
+    <button class="btn-delete" onclick="confirmDelete()">Hapus Kad dari Peranti</button>
+</div>
+
+<!-- Navbar -->
+<div class="navbar">
+    <div class="nav-item" onclick="location.reload()">
+        <span class="nav-icon">🪪</span>KAD
+    </div>
+
+    <div class="nav-item" onclick="openNews()">
+        <span class="nav-icon">🔥</span>NEWS
+    </div>
+
+    <a href="https://wa.me/60175626166" class="nav-item">
+        <span class="nav-icon">💬</span>HELP
+    </a>
+</div>
+
+<!-- Modal -->
+<div id="newsModal" class="modal">
+    <div class="modal-content">
+        <h3>Promosi Terkini!</h3>
+
+        <a href="https://sites.google.com/view/mbs-promo" target="_blank" class="btn-link" style="background:#3b82f6;">🌐 Katalog</a>
+
+        <a href="https://shopee.com.my/" target="_blank" class="btn-link" style="background:#ee4d2d;">🧡 Shopee</a>
+
+        <a href="https://facebook.com/YOURPAGE" target="_blank" class="btn-link" style="background:#1877F2;">📘 Facebook</a>
+
+        <a href="https://www.tiktok.com/@YOURUSERNAME" target="_blank" class="btn-link" style="background:#000;">🎵 TikTok</a>
+
+        <button onclick="closeNews()" style="margin-top:10px;border:none;background:none;color:#888;">Tutup</button>
+    </div>
+</div>
+
+<script>
+window.onload = startDetection;
+
+function startDetection() {
+    const savedID = localStorage.getItem("mbs_digital_id");
+
+    if (savedID) {
+        renderCard(savedID);
+    } else {
+        document.getElementById("setupArea").style.display = "block";
+        document.getElementById("loadingScreen").style.display = "none";
+    }
+}
+
+function activateCard() {
+    const id = document.getElementById("memberInput").value.trim().toUpperCase();
+
+    if (!id) {
+        alert("Sila masukkan No. Ahli.");
+        return;
+    }
+
+    localStorage.setItem("mbs_digital_id", id);
+    renderCard(id);
+}
+
+function renderCard(id) {
+    document.getElementById("setupArea").style.display = "none";
+    document.getElementById("cardArea").style.display = "flex";
+    document.getElementById("idDisplay").innerText = id;
+
+    const visual = document.getElementById("visualBg");
+
+    if (id.startsWith('3')) {
+        visual.style.backgroundImage = "url('png1.png')";
+        visual.style.backgroundColor = "#1e3a8a";
+    } 
+    else if (id.startsWith('9')) {
+        visual.style.backgroundImage = "url('png2.png')";
+        visual.style.backgroundColor = "#991b1b";
+    } 
+    else {
+        visual.style.backgroundImage = "none";
+        visual.style.backgroundColor = "#334155";
+    }
+
+    JsBarcode("#barcode", id, {
+        format: "CODE128",
+        width: 2.5,
+        height: 80,
+        displayValue: true
+    });
+
+    document.getElementById("loadingScreen").style.display = "none";
+}
+
+function confirmDelete() {
+    if (confirm("Padam kad dari peranti?")) {
+        localStorage.removeItem("mbs_digital_id");
+        location.reload();
+    }
+}
+
+function openNews() {
+    document.getElementById("newsModal").style.display = "block";
+}
+
+function closeNews() {
+    document.getElementById("newsModal").style.display = "none";
+}
+</script>
+
+</body>
+</html>
