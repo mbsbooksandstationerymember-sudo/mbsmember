@@ -2,11 +2,15 @@
   "name": "Digital MBS Member Card",
   "short_name": "MBS Member",
   "description": "Sistem Kad Keahlian Digital Rasmi MBS",
-  "start_url": "index.html",
+
+  "start_url": "/mbsmember/index.html",
+  "scope": "/mbsmember/",
+
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
+
   "icons": [
     {
       "src": "logo-192.png",
