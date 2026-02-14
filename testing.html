@@ -288,8 +288,17 @@ document.addEventListener("DOMContentLoaded", function() {
             // document.getElementById("idDisplay").innerText = id;
 
             const visual = document.getElementById("visualBg");
+            // 综合判定逻辑：
+            // 1. /^\d[\d\s]*\d$/ : 开头结尾必须是数字，中间允许数字或空格
+            // 2. !/[^\d\s]/      : 绝对不允许出现数字和空格以外的字符
+            // 3. id.length >= 6   : 总长度（含空格）必须大于等于 6
+            const isValidFormat = /^\d[\d\s]*\d$/.test(id) && !/[^\d\s]/.test(id) && id.length >= 6;
 
-            if (id.startsWith('3') || id.startsWith('6')) {
+            if (!isValidFormat) {
+                // 不符合格式或长度不足：Invalid
+                visual.style.backgroundImage = "url('/mbsmember/png3.png')";
+                visual.style.backgroundColor = "#334155";
+            } else if (id.startsWith('3') || id.startsWith('6')) {
                 visual.style.backgroundImage = "url('/mbsmember/png1.png')";
                 visual.style.backgroundColor = "#1e3a8a";
             } else if (id.startsWith('9')) {
@@ -401,7 +410,4 @@ function setBg(number) {
 
 </body>
 </html>
-
-
-
 
