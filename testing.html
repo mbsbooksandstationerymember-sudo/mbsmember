@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital MBS Member Card</title>
     <link rel="manifest" href="/mbsmember/manifest.json">
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
 
     <style>
@@ -62,11 +63,18 @@
         }
 
         /* ===== Setup Area ===== */
+
+
+        <div id="setupArea">
+    <button onclick="startScanner()">扫描会员卡</button>
+    <div id="reader" style="width: 300px; margin: auto; display: none;"></div>
+</div>
         .setup-area { 
             background: white; padding: 30px; border-radius: 20px; 
             text-align: center; width: 100%; max-width: 350px; 
             box-shadow: 0 10px 20px rgba(0,0,0,0.05); 
         }
+
 
         .skin-grid {
             display: flex;
@@ -280,6 +288,44 @@ document.addEventListener("DOMContentLoaded", function() {
 
 });
 
+    function startScanner() {
+    const readerElement = document.getElementById("reader");
+    readerElement.style.display = "block"; // 显示摄像头区域
+
+    const html5QrCode = new Html5Qrcode("reader");
+
+    const config = { 
+        fps: 10, 
+        qrbox: { width: 250, height: 150 } // 设置扫描框大小，条形码建议长方形
+    };
+
+    // 开始扫描
+    html5QrCode.start(
+        { facingMode: "environment" }, // 优先使用后置摄像头
+        config,
+        (decodedText) => {
+            // 扫描成功后的回调
+            console.log("扫描结果:", decodedText);
+            
+            // 1. 停止摄像头并隐藏
+            html5QrCode.stop().then(() => {
+                readerElement.style.display = "none";
+                
+                // 2. 将扫描到的 ID 存入 localStorage
+                localStorage.setItem("mbs_digital_id", decodedText);
+                
+                // 3. 直接调用你之前的渲染函数
+                renderCard(decodedText);
+            });
+        },
+        (errorMessage) => {
+            // 扫描中的错误（比如没对准），通常不处理
+        }
+    ).catch((err) => {
+        alert("无法打开摄像头: " + err);
+    });
+}
+
 
     function renderCard(id) {
         setTimeout(() => {
@@ -410,4 +456,5 @@ function setBg(number) {
 
 </body>
 </html>
+
 
