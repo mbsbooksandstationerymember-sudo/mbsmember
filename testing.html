@@ -1,322 +1,326 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Digital MBS Member Card</title>
+    <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
+    <meta http-equiv="Content-Language" content="ms">
 
-<meta name="google" content="notranslate">
-<meta http-equiv="Content-Language" content="ms">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital MBS Member Card</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
 
-<!-- JsBarcode -->
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <style>
+        :root { 
+            --primary: #0f172a; 
+            --accent: #3b82f6;
+        }
 
-<!-- OneSignal -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "5219b476-fb6d-471f-948d-d62440603af3",
-      serviceWorkerPath: "OneSignalSDKWorker.js", // Tambah baris ini
-    });
-  });
-</script>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f1f5f9; 
+            margin: 0; padding: 20px; 
+            display: flex; flex-direction: column; align-items: center;
+            padding-bottom: 120px;
+        }
 
-<style>
-:root { 
-    --primary: #0f172a; 
-    --accent: #3b82f6;
-}
+        #setupArea, #cardArea { display: none; }
 
-body {
-    font-family: Arial, sans-serif;
-    background: #f1f5f9;
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-bottom: 120px;
-}
+        /* ===== Loading ===== */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
 
-/* Loading */
-#loadingScreen {
-    position: fixed;
-    inset: 0;
-    background: #f1f5f9;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 999;
-}
+        #loadingScreen {
+            position: fixed;
+            inset: 0;
+            background: #f1f5f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
 
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid #ddd;
-    border-top: 5px solid var(--accent);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #ddd;
+            border-top: 5px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
 
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
+        /* ===== Setup Area ===== */
+        .setup-area { 
+            background: white; padding: 30px; border-radius: 20px; 
+            text-align: center; width: 100%; max-width: 350px; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); 
+        }
 
-/* Setup */
-#setupArea {
-    display: none;
-    background: white;
-    padding: 30px;
-    border-radius: 20px;
-    text-align: center;
-    width: 100%;
-    max-width: 350px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-}
+        input { 
+            width: 100%; padding: 15px; border: 2px solid #ddd; 
+            border-radius: 12px; font-size: 1.2rem; text-align: center; 
+            box-sizing: border-box; margin-bottom: 10px; 
+        }
 
-/* Card */
-#cardArea {
-    display: none;
-    width: 100%;
-    max-width: 380px;
-    flex-direction: column;
-    align-items: center;
-}
+        /* ===== Card ===== */
+        #cardArea { 
+            width: 100%; max-width: 380px; 
+            flex-direction: column; align-items: center; 
+            animation: fadeIn 0.5s ease; 
+        }
 
-.card-visual {
-    width: 100%;
-    height: 210px;
-    border-radius: 20px;
-    background-size: cover;
-    background-position: center;
-    background-color: #334155;
-    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
-    padding: 25px;
-    box-sizing: border-box;
-    color: white;
-}
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-.barcode-section {
-    background: white;
-    border-radius: 15px;
-    padding: 15px;
-    margin-top: -40px;
-    width: 85%;
-    text-align: center;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-}
+        .card-visual { 
+            width: 100%; height: 210px; border-radius: 20px; 
+            background-size: cover; background-position: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            position: relative; color: white; padding: 25px; box-sizing: border-box;
+            background-color: #334155;
+        }
 
-.btn-delete {
-    margin-top: 25px;
-    background: none;
-    border: 1px solid #ccc;
-    color: #888;
-    padding: 8px 15px;
-    border-radius: 8px;
-    font-size: 0.7rem;
-    cursor: pointer;
-}
+        .barcode-section { 
+            background: white; border-radius: 15px; padding: 15px; 
+            margin-top: -40px; width: 85%; text-align: center; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            z-index: 5;
+        }
 
-/* Navbar */
-.navbar {
-    position: fixed;
-    bottom: 20px;
-    width: 90%;
-    max-width: 400px;
-    background: rgba(15, 23, 42, 0.95);
-    display: flex;
-    justify-content: space-around;
-    padding: 15px;
-    border-radius: 25px;
-    color: white;
-}
+        #barcode { width: 100%; height: auto; }
 
-.nav-item {
-    text-align: center;
-    font-size: 0.75rem;
-    cursor: pointer;
-    text-decoration: none;
-    color: white;
-}
+        /* ===== Navbar ===== */
+        .navbar { 
+            position: fixed; bottom: 20px; width: 90%; max-width: 400px;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
+            display: flex; justify-content: space-around; padding: 15px;
+            border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
 
-.nav-icon {
-    font-size: 1.5rem;
-    display: block;
-}
+        .nav-item { 
+            color: white; text-decoration: none; text-align: center; 
+            font-size: 0.75rem; display: flex; flex-direction: column; 
+            align-items: center; cursor: pointer; 
+        }
 
-/* Modal */
-.modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.8);
-    z-index: 200;
-}
+        .nav-icon { font-size: 1.5rem; margin-bottom: 4px; }
 
-.modal-content {
-    background: white;
-    margin: 15% auto;
-    padding: 25px;
-    width: 85%;
-    max-width: 400px;
-    border-radius: 20px;
-    text-align: center;
-}
+        /* ===== Modal ===== */
+        .modal { 
+            display: none; position: fixed; z-index: 200; 
+            left: 0; top: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.8); 
+        }
 
-.btn-link {
-    display: block;
-    padding: 12px;
-    margin: 8px 0;
-    border-radius: 10px;
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
-}
-</style>
+        .modal-content { 
+            background: white; margin: 10% auto; padding: 25px; 
+            width: 85%; max-width: 400px; border-radius: 25px; 
+            text-align: center; position: relative; 
+        }
+
+        .btn-link { 
+            display: block; background: var(--accent); color: white; 
+            padding: 12px; margin: 8px 0; border-radius: 10px; 
+            text-decoration: none; font-weight: bold; font-size: 0.9rem; 
+        }
+
+        .btn-delete { 
+            margin-top: 30px; background: none; border: 1px solid #ccc; 
+            color: #888; padding: 8px 15px; border-radius: 8px; 
+            font-size: 0.7rem; cursor: pointer; 
+        }
+    </style>
 </head>
 
 <body>
 
-<!-- Loading -->
 <div id="loadingScreen">
     <div class="spinner"></div>
-    <p style="margin-top:15px;font-size:0.9rem;color:#555;">Sila tunggu sebentar...</p>
+    <p style="margin-top:15px; font-size:0.9rem; color:#555;">
+        Sila tunggu sebentar...
+    </p>
 </div>
 
-<!-- Setup -->
-<div id="setupArea">
+<div id="setupArea" class="setup-area">
     <h2 style="color:var(--primary)">Digital MBS Member Card</h2>
-    <p style="font-size:0.8rem;color:#666;">Masukkan No. Ahli untuk aktifkan kad.</p>
-    <input type="text" id="memberInput" placeholder="Contoh: 3ABC99"
-    style="width:100%;padding:15px;border:2px solid #ddd;border-radius:12px;margin-bottom:15px;text-align:center;">
-    <button onclick="activateCard()" 
-    style="width:100%;padding:15px;border-radius:12px;border:none;background:var(--primary);color:white;font-weight:bold;">
-    AKTIFKAN KAD
-    </button>
+    <p style="font-size: 0.8rem; color: #666; margin-bottom: 20px;">
+        Masukkan No. Ahli untuk aktifkan kad.
+    </p>
+    <input type="text" id="memberInput" placeholder="Contoh: 3ABC99">
+    <button style="width:100%; padding:15px; border-radius:12px; border:none; background:var(--primary); color:white; font-weight:bold; cursor:pointer;" onclick="activateCard()">AKTIFKAN KAD</button>
 </div>
 
-<!-- Card -->
 <div id="cardArea">
     <div id="visualBg" class="card-visual">
-        <div id="idDisplay" style="font-size:1.8rem;font-weight:800;margin-top:20px;letter-spacing:2px;"></div>
+        <div style="font-weight: bold; letter-spacing: 2px; opacity: 0.9;"></div>
+        <div id="idDisplay" style="font-size: 1.8rem; font-weight: 800; margin-top: 15px; letter-spacing: 2px;"></div>
     </div>
-
     <div class="barcode-section">
         <svg id="barcode"></svg>
-        <p style="font-size:0.6rem;color:#999;margin-top:5px;">SILA IMBAS DI KAUNTER</p>
+        <p style="font-size: 0.6rem; color: #999; margin-top: 5px; letter-spacing: 1px;">
+            SILA IMBAS DI KAUNTER
+        </p>
     </div>
-
     <button class="btn-delete" onclick="confirmDelete()">Hapus Kad dari Peranti</button>
 </div>
 
-<!-- Navbar -->
 <div class="navbar">
     <div class="nav-item" onclick="location.reload()">
-        <span class="nav-icon">🪪</span>KAD
+        <span class="nav-icon">🪪</span><span>KAD</span>
     </div>
 
     <div class="nav-item" onclick="openNews()">
-        <span class="nav-icon">🔥</span>NEWS
+        <span class="nav-icon">🔥</span><span>NEWS</span>
     </div>
 
     <a href="https://wa.me/60175626166" class="nav-item">
-        <span class="nav-icon">💬</span>HELP
+        <span class="nav-icon">💬</span><span>HELP</span>
     </a>
 </div>
 
-<!-- Modal -->
 <div id="newsModal" class="modal">
     <div class="modal-content">
-        <h3>Promosi Terkini!</h3>
-
-        <a href="https://sites.google.com/view/mbs-promo" target="_blank" class="btn-link" style="background:#3b82f6;">🌐 Katalog</a>
-
+        <span style="position:absolute; right:20px; top:15px; cursor:pointer; font-weight:bold; color:#999;" onclick="closeNews()">✕</span>
+        <h3 style="margin-top:0; color:var(--primary);">Promosi Terkini!</h3>
+        <a href="https://sites.google.com/view/mbs-promo" target="_blank" class="btn-link">🌐 Katalog</a>
         <a href="https://shopee.com.my/" target="_blank" class="btn-link" style="background:#ee4d2d;">🧡 Shopee</a>
-
         <a href="https://facebook.com/YOURPAGE" target="_blank" class="btn-link" style="background:#1877F2;">📘 Facebook</a>
+        <a href="https://www.tiktok.com/@YOURUSERNAME" target="_blank" class="btn-link" style="background:#000000;">🎵 TikTok</a>
 
-        <a href="https://www.tiktok.com/@YOURUSERNAME" target="_blank" class="btn-link" style="background:#000;">🎵 TikTok</a>
-
-        <button onclick="closeNews()" style="margin-top:10px;border:none;background:none;color:#888;">Tutup</button>
+        <button onclick="closeNews()" style="border:none; background:none; color:#888; margin-top:10px; cursor:pointer;">Tutup</button>
     </div>
 </div>
 
 <script>
-window.onload = startDetection;
+    let isRendered = false;
+    let checkInterval;
 
-function startDetection() {
-    const savedID = localStorage.getItem("mbs_digital_id");
+    function renderCard(id) {
+        setTimeout(() => {
+            document.getElementById("setupArea").style.display = "none";
+            document.getElementById("cardArea").style.display = "flex";
 
-    if (savedID) {
-        renderCard(savedID);
+            const visual = document.getElementById("visualBg");
+
+            if (id.startsWith('3')) {
+                visual.style.backgroundImage = "url('png1.png')";
+                visual.style.backgroundColor = "#1e3a8a";
+            } else if (id.startsWith('9')) {
+                visual.style.backgroundImage = "url('png2.png')";
+                visual.style.backgroundColor = "#991b1b";
+            } else {
+                visual.style.backgroundImage = "none";
+                visual.style.backgroundColor = "#334155";
+            }
+
+            JsBarcode("#barcode", id, {
+                format: "CODE128",
+                width: 2.5,
+                height: 80,
+                displayValue: true,
+                lineColor: "#000"
+            });
+
+            document.getElementById("loadingScreen").style.display = "none";
+            isRendered = true;
+        }, 1000);
+    }
+
+    function startDetection() {
+        checkInterval = setInterval(() => {
+            if (isRendered) {
+                clearInterval(checkInterval);
+                return;
+            }
+            const savedID = localStorage.getItem("mbs_digital_id");
+            if (savedID) {
+                renderCard(savedID);
+                clearInterval(checkInterval);
+            } else {
+                document.getElementById("setupArea").style.display = "block";
+                document.getElementById("loadingScreen").style.display = "none";
+            }
+        }, 1000);
+    }
+
+    window.onload = startDetection;
+
+    function activateCard() {
+        const id = document.getElementById("memberInput").value.trim().toUpperCase();
+        if (id) {
+            localStorage.setItem("mbs_digital_id", id);
+            location.reload();
+        } else {
+            alert("Sila masukkan No. Ahli.");
+        }
+    }
+
+    function confirmDelete() {
+        if (confirm("Padam kad dari peranti?")) {
+            localStorage.removeItem("mbs_digital_id");
+            isRendered = false;
+            location.reload();
+        }
+    }
+
+    function openNews() {
+        document.getElementById("newsModal").style.display = "block";
+    }
+
+    function closeNews() {
+        document.getElementById("newsModal").style.display = "none";
+    }
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+  import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBvbS5Uz4-o60SFr8Mk-bQnRb-jLOrGjwY",
+    authDomain: "mbs-member.firebaseapp.com",
+    projectId: "mbs-member",
+    storageBucket: "mbs-member.firebasestorage.app",
+    messagingSenderId: "456825217147",
+    appId: "1:456825217147:web:ab37d115902b23dc7582de"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const messaging = getMessaging(app);
+
+  async function requestPermission() {
+    console.log('Meminta kebenaran notifikasi...');
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      try {
+        // Daftar service worker khusus untuk GitHub Pages folder /mbsmember/
+        const registration = await navigator.serviceWorker.register('/mbsmember/firebase-messaging-sw.js', {
+          scope: '/mbsmember/'
+        });
+
+        const token = await getToken(messaging, { 
+          serviceWorkerRegistration: registration,
+          vapidKey: 'BOSIgcvqillr9wQVgZ4uia49ZsZg4KajhcF1gjqEOTo5bBWyIe9YziH4sef5PqT9uwyRDPtnOYurKqX4LgV3ei8' 
+        });
+
+        if (token) {
+          console.log("Token Pelanggan Berjaya Didapati.");
+          // Simpan token di console untuk anda test hantar nanti
+        }
+      } catch (err) {
+        console.error('Ralat pendaftaran FCM:', err);
+      }
     } else {
-        document.getElementById("setupArea").style.display = "block";
-        document.getElementById("loadingScreen").style.display = "none";
+        console.warn('Kebenaran notifikasi ditolak oleh pengguna.');
     }
-}
+  }
 
-function activateCard() {
-    const id = document.getElementById("memberInput").value.trim().toUpperCase();
-
-    if (!id) {
-        alert("Sila masukkan No. Ahli.");
-        return;
-    }
-
-    localStorage.setItem("mbs_digital_id", id);
-    renderCard(id);
-}
-
-function renderCard(id) {
-    document.getElementById("setupArea").style.display = "none";
-    document.getElementById("cardArea").style.display = "flex";
-    document.getElementById("idDisplay").innerText = id;
-
-    const visual = document.getElementById("visualBg");
-
-    if (id.startsWith('3')) {
-        visual.style.backgroundImage = "url('png1.png')";
-        visual.style.backgroundColor = "#1e3a8a";
-    } 
-    else if (id.startsWith('9')) {
-        visual.style.backgroundImage = "url('png2.png')";
-        visual.style.backgroundColor = "#991b1b";
-    } 
-    else {
-        visual.style.backgroundImage = "none";
-        visual.style.backgroundColor = "#334155";
-    }
-
-    JsBarcode("#barcode", id, {
-        format: "CODE128",
-        width: 2.5,
-        height: 80,
-        displayValue: true
-    });
-
-    document.getElementById("loadingScreen").style.display = "none";
-}
-
-function confirmDelete() {
-    if (confirm("Padam kad dari peranti?")) {
-        localStorage.removeItem("mbs_digital_id");
-        location.reload();
-    }
-}
-
-function openNews() {
-    document.getElementById("newsModal").style.display = "block";
-}
-
-function closeNews() {
-    document.getElementById("newsModal").style.display = "none";
-}
+  // Panggil fungsi request permission
+  requestPermission();
 </script>
 
 </body>
 </html>
-
