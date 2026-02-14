@@ -289,25 +289,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
             const visual = document.getElementById("visualBg");
 
-// Semak jika bermula dengan 3 atau 6
-            if (id.startsWith('3') || id.startsWith('6')) { [cite: 43]
-                visual.style.backgroundImage = "url('/mbsmember/png1.png')"; [cite: 43]
-                visual.style.backgroundColor = "#1e3a8a"; [cite: 43]
-            } 
-            // Semak jika bermula dengan 9
-            else if (id.startsWith('9')) { [cite: 43]
-                visual.style.backgroundImage = "url('/mbsmember/png2.png')"; [cite: 43]
-                visual.style.backgroundColor = "#991b1b"; [cite: 43]
-            } 
-            // Logik baru: Semak jika mengandungi sebarang huruf (A-Z)
-            else if (/[A-Z]/.test(id)) { 
-                visual.style.backgroundImage = "url('/mbsmember/png3.png')"; 
-                visual.style.backgroundColor = "#991b1b"; // Warna merah seperti permintaan anda
-            } 
-            // Jika tiada kriteria di atas dipenuhi
-            else { 
-                visual.style.backgroundImage = "url('/mbsmember/png3.png')"; [cite: 44]
-                visual.style.backgroundColor = "#334155"; [cite: 44]
+            if (id.startsWith('3') || id.startsWith('6')) {
+                visual.style.backgroundImage = "url('/mbsmember/png1.png')";
+                visual.style.backgroundColor = "#1e3a8a";
+            } else if (id.startsWith('9')) {
+                visual.style.backgroundImage = "url('/mbsmember/png2.png')";
+                visual.style.backgroundColor = "#991b1b";
+            } else {
+                visual.style.backgroundImage = "url('/mbsmember/png3.png')";
+                visual.style.backgroundColor = "#334155";
             }
 
             JsBarcode("#barcode", id, {
