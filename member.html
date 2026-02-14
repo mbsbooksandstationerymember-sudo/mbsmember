@@ -288,8 +288,18 @@ document.addEventListener("DOMContentLoaded", function() {
             // document.getElementById("idDisplay").innerText = id;
 
             const visual = document.getElementById("visualBg");
+            // 正则解释：
+        // ^\d         : 开头必须是数字
+        // [\d\s]* : 中间可以是数字或空格
+        // \d$         : 结尾必须是数字
+        // 且整个字符串不能含有除了数字和空格以外的字符
+            const isValidFormat = /^\d[\d\s]*\d$/.test(id) && !/[^\d\s]/.test(id);
 
-            if (id.startsWith('3') || id.startsWith('6')) {
+            if (!isValidFormat) {
+            // 如果包含字母、符号，或者空格在首尾：Invalid
+                visual.style.backgroundImage = "url('/mbsmember/png3.png')";
+                visual.style.backgroundColor = "#334155";
+            } else if (id.startsWith('3') || id.startsWith('6')) {
                 visual.style.backgroundImage = "url('/mbsmember/png1.png')";
                 visual.style.backgroundColor = "#1e3a8a";
             } else if (id.startsWith('9')) {
@@ -401,3 +411,4 @@ function setBg(number) {
 
 </body>
 </html>
+
