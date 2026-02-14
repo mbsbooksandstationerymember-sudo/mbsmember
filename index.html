@@ -97,7 +97,7 @@ to{opacity:1;transform:translateY(0)}
 
 <div id="setupArea">
 <p id="statusText">Menyediakan aplikasi...</p>
-<button id="installBtn">Pasang Aplikasi</button>
+<button id="installBtn" style="display:none;">Pasang Aplikasi</button>
 </div>
 
 <div id="loadingArea" style="display:none">
@@ -110,10 +110,12 @@ to{opacity:1;transform:translateY(0)}
 
 // ===== Service Worker (WAJIB untuk PWA) =====
 if('serviceWorker' in navigator){
-navigator.serviceWorker.register('sw.js');
+  navigator.serviceWorker.register('sw.js');
 }
 
 let deferredPrompt;
+let installAccepted = false;
+
 const installBtn=document.getElementById('installBtn');
 const statusText=document.getElementById('statusText');
 const setupArea=document.getElementById('setupArea');
@@ -121,52 +123,71 @@ const loadingArea=document.getElementById('loadingArea');
 
 // ===== 如果已安装 → 秒进 =====
 if(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone){
-openPortal();
+  openPortal();
 }
 
 // ===== Android Install Event =====
 window.addEventListener('beforeinstallprompt',e=>{
-e.preventDefault();
-deferredPrompt=e;
-installBtn.style.display='inline-block';
-statusText.innerText="Pasang aplikasi untuk akses pantas";
+  e.preventDefault();
+  deferredPrompt=e;
+  installBtn.style.display='inline-block';
+  statusText.innerText="Pasang aplikasi untuk akses pantas";
 });
 
+// ===== Install Button Click =====
 installBtn.onclick=async()=>{
-if(!deferredPrompt) return;
-deferredPrompt.prompt();
-await deferredPrompt.userChoice;
-deferredPrompt=null;
-installBtn.style.display='none';
+  if(!deferredPrompt) return;
+
+  // Papar mesej sedang install
+  statusText.innerHTML="Sedang memasang aplikasi...<br><b>Jangan tutup browser</b>";
+  installBtn.style.display='none';
+
+  deferredPrompt.prompt();
+
+  const { outcome } = await deferredPrompt.userChoice;
+
+  if(outcome === "accepted"){
+    installAccepted = true;
+  }else{
+    statusText.innerText="Pemasangan dibatalkan";
+    installBtn.style.display='inline-block';
+  }
+
+  deferredPrompt=null;
 };
 
 // ===== 安装完成 =====
 window.addEventListener('appinstalled',()=>{
-openPortal();
+  if(!installAccepted) return;
+
+  statusText.innerHTML="Pemasangan berjaya!<br>Membuka portal...";
+
+  // Delay sedikit supaya install betul-betul siap
+  setTimeout(()=>{
+    openPortal();
+  },3000);
 });
 
 // ===== iOS 教学 =====
 const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
 if(isIOS && !window.navigator.standalone){
-statusText.innerHTML=
-"Tekan <b>Share</b> lalu pilih <b>Add to Home Screen</b>";
+  statusText.innerHTML=
+  "Tekan <b>Share</b> lalu pilih <b>Add to Home Screen</b>";
 }
 
 // ===== 打开 Portal =====
 function openPortal(){
-setupArea.style.display='none';
-loadingArea.style.display='block';
+  setupArea.style.display='none';
+  loadingArea.style.display='block';
 
-window.location.replace(
-"https://mbsbooksandstationerymember-sudo.github.io/mbsmember/member"
-);
+  setTimeout(()=>{
+    window.location.replace(
+      "https://mbsbooksandstationerymember-sudo.github.io/mbsmember/member"
+    );
+  },1000);
 }
 
 </script>
 
 </body>
 </html>
-
-
-
-
