@@ -7,7 +7,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital MBS Member Card</title>
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="/mbsmember/manifest.json">
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
 
     <style>
@@ -212,13 +212,13 @@
             const visual = document.getElementById("visualBg");
 
             if (id.startsWith('3') || id.startsWith('6')) {
-                visual.style.backgroundImage = "url('png1.png')";
+                visual.style.backgroundImage = "url('/mbsmember/png1.png')";
                 visual.style.backgroundColor = "#1e3a8a";
             } else if (id.startsWith('9')) {
-                visual.style.backgroundImage = "url('png2.png')";
+                visual.style.backgroundImage = "url('/mbsmember/png2.png')";
                 visual.style.backgroundColor = "#991b1b";
             } else {
-                visual.style.backgroundImage = "none";
+                visual.style.backgroundImage = "url('/mbsmember/png3.png')";
                 visual.style.backgroundColor = "#334155";
             }
 
@@ -287,6 +287,7 @@
 
 </body>
 </html>
+
 
 
 
