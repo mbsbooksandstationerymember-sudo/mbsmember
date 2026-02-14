@@ -200,6 +200,20 @@
 </div>
 
 <script>
+
+// ===== Service Worker 注册 =====
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/mbsmember/sw.js')
+            .then(() => navigator.serviceWorker.ready)
+            .then(() => {
+                console.log("SW Ready");
+            })
+            .catch(err => console.log("SW error:", err));
+    });
+}
+
+    
     let isRendered = false;
     let checkInterval;
 
@@ -287,6 +301,7 @@
 
 </body>
 </html>
+
 
 
 
