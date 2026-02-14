@@ -201,17 +201,72 @@
 
 <script>
 
-// ===== Service Worker 注册 =====
+// ===== Service Worker 注册 + 更新检测 =====
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/mbsmember/sw.js')
-            .then(() => navigator.serviceWorker.ready)
-            .then(() => {
-                console.log("SW Ready");
-            })
-            .catch(err => console.log("SW error:", err));
-    });
+
+  window.addEventListener('load', () => {
+
+    navigator.serviceWorker.register('/mbsmember/sw.js')
+      .then(registration => {
+
+        console.log("SW Registered");
+
+        // 监听新版本
+        registration.addEventListener('updatefound', () => {
+
+          const newWorker = registration.installing;
+
+          newWorker.addEventListener('statechange', () => {
+
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateButton(registration);
+            }
+
+          });
+
+        });
+
+      })
+      .catch(err => console.log("SW error:", err));
+
+  });
+
+  // 新 SW 接管后自动刷新
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    window.location.reload();
+  });
 }
+
+function showUpdateButton(registration) {
+
+  // 防止重复出现
+  if (document.getElementById("updateBtn")) return;
+
+  const btn = document.createElement("button");
+  btn.id = "updateBtn";
+  btn.innerText = "🔄 Versi Baharu Tersedia - Klik Untuk Kemas Kini";
+
+  btn.style.position = "fixed";
+  btn.style.bottom = "90px";
+  btn.style.left = "50%";
+  btn.style.transform = "translateX(-50%)";
+  btn.style.padding = "10px 15px";
+  btn.style.background = "#0f172a";
+  btn.style.color = "white";
+  btn.style.border = "none";
+  btn.style.borderRadius = "10px";
+  btn.style.zIndex = "9999";
+  btn.style.cursor = "pointer";
+
+  btn.onclick = () => {
+    if (registration.waiting) {
+      registration.waiting.postMessage("SKIP_WAITING");
+    }
+  };
+
+  document.body.appendChild(btn);
+}
+
 
     
     let isRendered = false;
@@ -301,6 +356,7 @@ if ('serviceWorker' in navigator) {
 
 </body>
 </html>
+
 
 
 
