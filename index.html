@@ -139,7 +139,10 @@ installBtn.onclick=async()=>{
   if(!deferredPrompt) return;
 
   // Papar mesej sedang install
-  statusText.innerHTML="Sedang memasang aplikasi...<br><b>Jangan tutup browser</b>";
+  statusText.innerHTML=
+  "<b>Sedang memasang aplikasi...</b><br>" +
+  "Jangan tutup browser";
+  
   installBtn.style.display='none';
 
   deferredPrompt.prompt();
@@ -160,12 +163,17 @@ installBtn.onclick=async()=>{
 window.addEventListener('appinstalled',()=>{
   if(!installAccepted) return;
 
-  statusText.innerHTML="Pemasangan berjaya!<br>Membuka portal...";
+  // Kekalkan mesej 10 saat
+  statusText.innerHTML=
+  "<b>Sedang memasang aplikasi...</b><br>" +
+  "Jangan tutup browser";
 
-  // Delay sedikit supaya install betul-betul siap
   setTimeout(()=>{
+    statusText.innerHTML=
+    "<b>Pemasangan berjaya!</b><br>Membuka portal...";
+    
     openPortal();
-  },10000);
+  },10000); // ✅ 10 saat penuh
 });
 
 // ===== iOS 教学 =====
@@ -189,6 +197,8 @@ function openPortal(){
 
 </script>
 
+
 </body>
 </html>
+
 
