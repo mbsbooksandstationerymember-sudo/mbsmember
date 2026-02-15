@@ -230,9 +230,9 @@
         <h3 style="margin-top:0;">Pilih Background</h3>
 
         <div class="skin-grid">
-            <img src="/mbsmember/skin1.png" onclick="setBg(1)">
-            <img src="/mbsmember/skin2.png" onclick="setBg(2)">
-            <img src="/mbsmember/skin3.png" onclick="setBg(3)">
+            <img src="/mbsmember/skin1.jpg" onclick="setBg(1)">
+            <img src="/mbsmember/skin2.jpg" onclick="setBg(2)">
+            <img src="/mbsmember/skin3.jpg" onclick="setBg(3)">
         </div>
     </div>
 </div>
@@ -258,7 +258,7 @@
 
     function setBg(number) {
 
-    const path = "/mbsmember/skin" + number + ".png";
+    const path = "/mbsmember/skin" + number + ".jpg";
 
     localStorage.setItem("mbs_background", path);
 
@@ -275,7 +275,7 @@ document.addEventListener("DOMContentLoaded", function() {
             "url('" + savedBg + "')";
     } else {
         document.getElementById("bgLayer").style.backgroundImage =
-            "url('/mbsmember/skin1.png')";
+            "url('/mbsmember/skin1.jpg')";
     }
 
 });
@@ -365,7 +365,7 @@ function closeSkinSelector() {
 
 function setBg(number) {
 
-    const path = "/mbsmember/skin" + number + ".png";
+    const path = "/mbsmember/skin" + number + ".jpg";
 
     localStorage.setItem("mbs_background", path);
 
@@ -384,7 +384,7 @@ function setBg(number) {
             "url('" + savedBg + "')";
     } else {
         document.getElementById("bgLayer").style.backgroundImage =
-            "url('/mbsmember/skin1.png')";
+            "url('/mbsmember/skin1.jpg')";
     }
 
 });
@@ -410,5 +410,6 @@ function setBg(number) {
 
 </body>
 </html>
+
 
 
